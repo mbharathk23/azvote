@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+    environment {
+     REGISTRY = "bharathazacr.azurecr.io"
+     PROJECT  = "azvote"
+     COMPONENT_NAME= "app" 
+     IMAGE = "${env.PROJECT_NAME}/${env.COMPONENT_NAME}"
+     BRANCH =  "${GIT_BRANCH}"
+    }
+        
+    stages {
+        stage('Get config parameters') {
+           steps {
+		    script {
+			env.GIT_COMMIT = sh (script: "git log -n 1 --pretty='%H'", returnStdout: true)
+			echo "Curret Build Branch : $BRANCH"
+			if ( BRANCH == 'master') {
+  				env.IMAGE_TAG = sh (script: "echo release-${GIT_COMMIT}", returnStdout: true).trim() 
+				echo "Assigning Image Tag : ${IMAGE_TAG}"
+			}
+			else {
+				env.IMAGE_TAG = sh (script: "echo non-release-${GIT_COMMIT}", returnStdout: true).trim() 
+				echo "Assigning Image Tag : ${IMAGE_TAG}"	    
+			    }
+		     }
+           	}
+        }
+		
+stage('build') {
+       steps {
+        withCredentials([usernamePassword(credentialsId: 'acr', passwordVariable: 'password', usernameVariable: 'username')]) {
+        sh  'echo $password | docker login $REGISTRY -u $username --password-stdin'
+		sh  'docker build -t ${REGISTRY}/${PROJECT}:${IMAGE_TAG} .'
+		sh  'docker push ${REGISTRY}/${PROJECT}:${IMAGE_TAG} '
+         echo 'docker push successful'
+                }
+            }
+        } 
+    }
+
+post {
+    always {
+        cleanWs()
+           }
+    }
+}
