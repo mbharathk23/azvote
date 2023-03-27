@@ -31,7 +31,8 @@ stage('build') {
         withCredentials([usernamePassword(credentialsId: 'acr', passwordVariable: 'password', usernameVariable: 'username')]) {
         sh  'echo $password | docker login $REGISTRY -u $username --password-stdin'
 		sh  'cd azure-vote && docker build -t ${REGISTRY}/${PROJECT}:${IMAGE_TAG} .'
-		sh  'docker push ${REGISTRY}/${PROJECT}:${IMAGE_TAG} '
+		sh  'docker image tag ${REGISTRY}/${PROJECT}:${IMAGE_TAG} ${REGISTRY}/${PROJECT}:latest '
+		sh  'docker push ${REGISTRY}/${PROJECT} --all-tags '
          echo 'docker push successful'
                 }
             }
