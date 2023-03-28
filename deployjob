@@ -4,8 +4,8 @@ stages {
 stage('build') {
        steps {
         sh  'echo Deploying APplication'
-        sh  'kubectl delete -f deploy.yaml -n azvote'  
         sh  'kubectl delete deployment azure-vote-front -n azvote'  
+        sh  'kubectl apply -f deploy.yaml -n azvote' 
         sh  'kubectl get all -n azvote'  
             }
         } 
