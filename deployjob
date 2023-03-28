@@ -1,0 +1,17 @@
+pipeline {
+    agent any       
+stages {
+stage('build') {
+       steps {
+        sh  'echo Deploying APplication'
+        sh  'kubectl apply -f deploy.yaml -n azvote'  
+        sh  'kubectl get all -n azvote'  
+            }
+        } 
+    }
+post {
+    always {
+        cleanWs()
+           }
+    }
+}
