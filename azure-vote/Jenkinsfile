@@ -25,7 +25,17 @@ pipeline {
 		     }
            	}
         }
-		
+	    
+stage('Docker Build and Push') {
+       steps {
+        withCredentials([usernamePassword(credentialsId: 'AZ_login_creds', passwordVariable: 'password', usernameVariable: 'username')]) {
+        	sh  'az login -u <username> -p <password>'
+		sh  'az acr repository delete --name $REGISTRY --image ${PROJECT}:latest'
+		sh 'az acr repository list -n --name $REGISTRY/${PROJECT}'
+                }
+            }
+        } 
+	    
 stage('Docker Build and Push') {
        steps {
         withCredentials([usernamePassword(credentialsId: 'acr', passwordVariable: 'password', usernameVariable: 'username')]) {
