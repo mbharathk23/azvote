@@ -19,21 +19,21 @@ pipeline {
 				echo "Assigning Image Tag : ${IMAGE_TAG}"
 			}
 			else {
-				env.IMAGE_TAG = sh (script: "echo non-release-${GIT_COMMIT}", returnStdout: true).trim() 
+				env.IMAGE_TAG = sh (script: "echo release-${GIT_COMMIT}", returnStdout: true).trim() 
 				echo "Assigning Image Tag : ${IMAGE_TAG}"	    
 			    }
 		     }
            	}
         }
 		
-stage('build') {
+stage('Docker Build and Push') {
        steps {
         withCredentials([usernamePassword(credentialsId: 'acr', passwordVariable: 'password', usernameVariable: 'username')]) {
         sh  'echo $password | docker login $REGISTRY -u $username --password-stdin'
-		sh  'cd azure-vote && docker build -t ${REGISTRY}/${PROJECT}:${IMAGE_TAG} .'
-		sh  'docker image tag ${REGISTRY}/${PROJECT}:${IMAGE_TAG} ${REGISTRY}/${PROJECT}:latest '
-		sh  'docker push ${REGISTRY}/${PROJECT} --all-tags '
-         echo 'docker push successful'
+	sh  'cd azure-vote && docker build -t ${REGISTRY}/${PROJECT}:${IMAGE_TAG} .'
+	sh  'docker image tag ${REGISTRY}/${PROJECT}:${IMAGE_TAG} ${REGISTRY}/${PROJECT}:latest '
+	sh  'docker push ${REGISTRY}/${PROJECT} --all-tags '
+        echo 'Docker build and push successful'
                 }
             }
         } 
